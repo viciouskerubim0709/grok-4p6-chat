@@ -17,52 +17,42 @@ from st_copy import copy_button
 st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
 st.markdown("""
     <style> 
-    /* 전체 앱 배경을 하늘색으로 설정 */
+    /* 스트림릿 기본 배경을 어둡게 설정 */
     .stApp {
-        background: linear-gradient(to bottom, #cbe3f8 0%, #d6eaff 100%);
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
         overflow: hidden;
+        color: #ffffff;
     }
-
-    /* 구름 레이어 1 */
-    .stApp::before {
-        content: "";
+    
+    /* 별 스타일 설정 */
+    .star {
         position: absolute;
-        top: 0; left: 0; width: 200%; height: 100%;
-        background: url('https://githubusercontent.com') repeat-x;
-        background-size: contain;
-        opacity: 0.4;
-        animation: moveClouds 60s linear infinite;
-        z-index: 0;
-        pointer-events: none;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 0 10px white, 0 0 20px white;
+        animation: blink var(--duration) infinite ease-in-out;
     }
-
-    /* 구름 레이어 2 (속도와 높이를 다르게 하여 입체감 부여) */
-    .stApp::after {
-        content: "";
-        position: absolute;
-        top: 10%; left: 0; width: 200%; height: 100%;
-        background: url('https://githubusercontent.com') repeat-x;
-        background-size: contain;
-        opacity: 0.6;
-        animation: moveClouds 40s linear infinite reverse;
-        z-index: 0;
-        pointer-events: none;
+    
+    /* 반짝이는 애니메이션 */
+    @keyframes blink {
+        0%, 100% { opacity: 0.2; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
     }
-
-    /* 구름 이동 애니메이션 */
-    @keyframes moveClouds {
-        0% { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
-    }
-
-    /* 콘텐츠가 구름 위에 보이도록 레이어 순서 조정 */
-    .block-container {
-        position: relative;
-        z-index: 1;
-        background: rgba(255, 255, 255, 0.4); /* 콘텐츠 가독성을 위한 반투명 배경 */
-        padding: 2rem;
-        border-radius: 10px;
-    }
+    </style>
+    
+    <!-- 무작위 위치와 애니메이션 속도를 가진 별들 생성 -->
+    <div class="star" style="top: 10%; left: 20%; --duration: 2s;"></div>
+    <div class="star" style="top: 15%; left: 75%; --duration: 3s;"></div>
+    <div class="star" style="top: 30%; left: 45%; --duration: 1.5s;"></div>
+    <div class="star" style="top: 45%; left: 10%; --duration: 2.5s;"></div>
+    <div class="star" style="top: 55%; left: 85%; --duration: 4s;"></div>
+    <div class="star" style="top: 70%; left: 30%; --duration: 2.2s;"></div>
+    <div class="star" style="top: 80%; left: 60%; --duration: 1.8s;"></div>
+    <div class="star" style="top: 90%; left: 15%; --duration: 3.5s;"></div>
+    <div class="star" style="top: 25%; left: 90%; --duration: 2.7s;"></div>
+    <div class="star" style="top: 65%; left: 50%; --duration: 3.2s;"></div>
 
     
     .stTextArea textarea {
