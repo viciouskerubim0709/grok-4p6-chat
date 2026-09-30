@@ -17,6 +17,54 @@ from st_copy import copy_button
 st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
 st.markdown("""
     <style> 
+    /* 전체 앱 배경을 하늘색으로 설정 */
+    .stApp {
+        background: linear-gradient(to bottom, #cbe3f8 0%, #d6eaff 100%);
+        overflow: hidden;
+    }
+
+    /* 구름 레이어 1 */
+    .stApp::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 200%; height: 100%;
+        background: url('https://githubusercontent.com') repeat-x;
+        background-size: contain;
+        opacity: 0.4;
+        animation: moveClouds 60s linear infinite;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* 구름 레이어 2 (속도와 높이를 다르게 하여 입체감 부여) */
+    .stApp::after {
+        content: "";
+        position: absolute;
+        top: 10%; left: 0; width: 200%; height: 100%;
+        background: url('https://githubusercontent.com') repeat-x;
+        background-size: contain;
+        opacity: 0.6;
+        animation: moveClouds 40s linear infinite reverse;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    /* 구름 이동 애니메이션 */
+    @keyframes moveClouds {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    /* 콘텐츠가 구름 위에 보이도록 레이어 순서 조정 */
+    .block-container {
+        position: relative;
+        z-index: 1;
+        background: rgba(255, 255, 255, 0.4); /* 콘텐츠 가독성을 위한 반투명 배경 */
+        padding: 2rem;
+        border-radius: 10px;
+    }
+
+    
     .stTextArea textarea {
         font-size: 16px !important;
         max-height: 150px !important;
