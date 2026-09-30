@@ -16,37 +16,7 @@ from st_copy import copy_button
 # ====================== 전역 설정 ======================
 st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
 st.markdown("""
-    <style>
-    /* Sky Background Gradient */
-    .sky-background {
-      width: 100% !important;
-      height: 100vh !important;
-      background: linear-gradient(to bottom, #1e90ff 0%, #87ceeb 100%) !important;
-      overflow: hidden !important;
-      position: relative !important;
-    }
-    
-    /* Animated Cloud Layer */
-    .clouds {
-      position: absolute !important;
-      top: 0 !important;
-      left: 0 !important;
-      bottom: 0 !important;
-      right: 0 !important;
-      background: transparent url('https://static.radulescu.me/examples/clouds/clouds1000.png') repeat 0 0 !important;
-      animation: moveClouds 30s linear infinite !important;
-    }
-    
-    /* Keyframes for Drifting Motion */
-    @keyframes moveClouds {
-      from {
-        background-position: 0 0 !important;
-      }
-      to {
-        background-position: 1000px 0 !important;
-      }
-    }
-    
+    <style> 
     .stTextArea textarea {
         font-size: 16px !important;
         max-height: 150px !important;
