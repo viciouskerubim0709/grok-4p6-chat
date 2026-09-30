@@ -19,31 +19,31 @@ st.markdown("""
     <style>
     /* Sky Background Gradient */
     .sky-background {
-      width: 100%;
-      height: 100vh;
-      background: linear-gradient(to bottom, #1e90ff 0%, #87ceeb 100%);
-      overflow: hidden;
-      position: relative;
+      width: 100% !important;
+      height: 100vh !important;
+      background: linear-gradient(to bottom, #1e90ff 0%, #87ceeb 100%) !important;
+      overflow: hidden !important;
+      position: relative !important;
     }
     
     /* Animated Cloud Layer */
     .clouds {
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      right: 0;
-      background: transparent url('https://static.radulescu.me/examples/clouds/clouds1000.png') repeat 0 0;
-      animation: moveClouds 30s linear infinite;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      background: transparent url('https://static.radulescu.me/examples/clouds/clouds1000.png') repeat 0 0 !important;
+      animation: moveClouds 30s linear infinite !important;
     }
     
     /* Keyframes for Drifting Motion */
     @keyframes moveClouds {
       from {
-        background-position: 0 0;
+        background-position: 0 0 !important;
       }
       to {
-        background-position: 1000px 0;
+        background-position: 1000px 0 !important;
       }
     }
     
