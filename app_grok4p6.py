@@ -37,7 +37,7 @@ st.markdown("""
         border: 1.2px solid #FFAFA3 !important;
     }
 
-    .st-key-chat_list [class*="st-key-chat_item_"] > hover {
+    .st-key-chat_list:hover {
         bbackground-color: transparent !important;
         color: #FFFFFF !important;
     }
