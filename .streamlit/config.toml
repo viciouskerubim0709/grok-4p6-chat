@@ -2,7 +2,7 @@
 #primaryColor = "#FF7E6B"           # 메인 버튼색 (가장 추천!)
 backgroundColor = "#000000"        # 전체 배경 - 아주 연한 복숭아
 #secondaryBackgroundColor = "#FFE4D9"  # 사이드바, 입력창 배경
-#textColor = "#2C1810"              # 글자색 (따뜻한 다크 브라운)
+textColor = "#FFFFFF"              # 글자색 (따뜻한 다크 브라운)
 #base = "light"
 
 [server]
