@@ -16,31 +16,7 @@ from st_copy import copy_button
 # ====================== 전역 설정 ======================
 st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
 st.markdown("""
-    <style> 
-    /* 스트림릿 기본 배경을 어둡게 설정 */
-    .stApp {
-        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-        overflow: hidden;
-        color: #ffffff;
-    }
-    
-    /* 별 스타일 설정 */
-    .star {
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        background: white;
-        border-radius: 50%;
-        box-shadow: 0 0 10px white, 0 0 20px white;
-        animation: blink var(--duration) infinite ease-in-out;
-    }
-    
-    /* 반짝이는 애니메이션 */
-    @keyframes blink {
-        0%, 100% { opacity: 0.2; transform: scale(0.8); }
-        50% { opacity: 1; transform: scale(1.2); }
-    }
-    
+    <style>     
     .stTextArea textarea {
         font-size: 16px !important;
         max-height: 150px !important;
