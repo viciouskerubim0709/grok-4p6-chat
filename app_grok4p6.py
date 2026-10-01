@@ -36,6 +36,13 @@ st.markdown("""
         border-radius: 10px !important;
         border: 1.2px solid #FFAFA3 !important;
     }
+
+    .st-key-chat_list [class*="st-key-chat_item_"] > button:hover {
+        bbackground-color: transparent !important;
+        color: #FFFFFF !important;
+    }
+
+    
     .st-key-chat_list [data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
     }
