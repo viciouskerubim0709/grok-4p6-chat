@@ -483,9 +483,7 @@ st.markdown(
         margin-left: 0px !important;
     }
     </style>
-    """,
-    unsafe_allow_index=True,
-    unsafe_allow_html=True
+    """, unsafe_allow_html=True
 )
 
 
