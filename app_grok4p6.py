@@ -68,15 +68,13 @@ st.markdown("""
     .st-key-summary {
         color: #FF5974 !important;
     }
-""", unsafe_allow_html=True) 
 
-st.html("""
-    <style>
     [data-testid="stChatMessageAvatarContainer"] {
         display: none !important;
     }
-    </style>
-""")
+    
+""", unsafe_allow_html=True) 
+
 
 # 한국 시간 기준
 kst = pytz.timezone('Asia/Seoul')
