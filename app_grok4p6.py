@@ -70,6 +70,67 @@ st.markdown("""
     }
 """, unsafe_allow_html=True) 
 
+st.markdown(
+    """
+    <style>
+    /* 전체 Streamlit 앱 배경색 설정 */
+    .stApp {
+        background-color: #050505;
+        color: #ffffff;
+    }
+
+    /* 별빛 배경 컨테이너 */
+    .starlight-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: -1; /* 콘텐츠 뒤로 보내기 */
+        overflow: hidden;
+        background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+    }
+
+    /* 반짝이는 별 애니메이션 정의 */
+    @keyframes twinkle {
+        0% { opacity: 0.2; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.2); }
+        100% { opacity: 0.2; transform: scale(0.8); }
+    }
+
+    .star {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: white;
+        border-radius: 50%;
+        animation: twinkle 3s infinite ease-in-out;
+    }
+
+    /* 개별 별 위치와 속도 다르게 설정 (예시) */
+    .star:nth-child(1) { top: 10%; left: 20%; animation-duration: 2s; }
+    .star:nth-child(2) { top: 30%; left: 70%; animation-duration: 3.5s; }
+    .star:nth-child(3) { top: 50%; left: 40%; animation-duration: 4s; }
+    .star:nth-child(4) { top: 75%; left: 80%; animation-duration: 2.5s; }
+    .star:nth-child(5) { top: 85%; left: 15%; animation-duration: 3s; }
+    .star:nth-child(6) { top: 20%; left: 90%; animation-duration: 5s; }
+    </style>
+
+    <!-- HTML 별 DOM 요소 생성 -->
+    <div class="starlight-bg">
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+        <div class="star"></div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+
 
 # 한국 시간 기준
 kst = pytz.timezone('Asia/Seoul')
