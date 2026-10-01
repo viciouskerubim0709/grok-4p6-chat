@@ -28,6 +28,7 @@ st.markdown("""
     .st-key-chat_list [class*="st-key-chat_item_"] {
         flex: 1 1 auto !important;
         background-color: transparent !important;
+        color: #FFFFFF !important;
         padding-left: 0.6rem !important;
         padding-right: 0.5rem !important;
         padding-bottom: 0.3rem !important;
@@ -37,7 +38,7 @@ st.markdown("""
         border: 1.2px solid #FFAFA3 !important;
     }
 
-    .st-key-chat_list:hover [class*="st-key-chat_item_"] {
+    .st-key-chat_list [class*="st-key-chat_item_"] > hover {
         background-color: transparent !important;
         color: #FFFFFF !important;
     }
