@@ -492,7 +492,7 @@ st.markdown(
 st.markdown("""
     <style>
     .custom-title {
-        color: #a67cd8 !important;
+        color: #FFFFFF !important;
     }
     @media (max-width: 768px) {
         .custom-title {
