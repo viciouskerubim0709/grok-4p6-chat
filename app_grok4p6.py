@@ -70,20 +70,6 @@ st.markdown("""
     }
 """, unsafe_allow_html=True) 
 
-<!-- 무작위 위치와 애니메이션 속도를 가진 별들 생성 -->
-<div class="star" style="top: 10%; left: 20%; --duration: 2s;"></div>
-<div class="star" style="top: 15%; left: 75%; --duration: 3s;"></div>
-<div class="star" style="top: 30%; left: 45%; --duration: 1.5s;"></div>
-<div class="star" style="top: 45%; left: 10%; --duration: 2.5s;"></div>
-<div class="star" style="top: 55%; left: 85%; --duration: 4s;"></div>
-<div class="star" style="top: 70%; left: 30%; --duration: 2.2s;"></div>
-<div class="star" style="top: 80%; left: 60%; --duration: 1.8s;"></div>
-<div class="star" style="top: 90%; left: 15%; --duration: 3.5s;"></div>
-<div class="star" style="top: 25%; left: 90%; --duration: 2.7s;"></div>
-<div class="star" style="top: 65%; left: 50%; --duration: 3.2s;"></div>
-
-
-
 
 # 한국 시간 기준
 kst = pytz.timezone('Asia/Seoul')
