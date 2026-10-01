@@ -27,21 +27,19 @@ st.markdown("""
     }
     .st-key-chat_list [class*="st-key-chat_item_"] {
         flex: 1 1 auto !important;
-        background-color: #ffece5 !important;
         padding-left: 0.6rem !important;
         padding-right: 0.5rem !important;
         padding-bottom: 0.3rem !important;
         padding-top: 0.3rem !important;
         word-break: keep-all !important;
         border-radius: 10px !important;
-        border: 1.2px solid #FFAFA3 !important;
+        border: 1.2px solid !important;
     }
     .st-key-chat_list [data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
     }
     div[data-testid="stPopoverBody"],
     div[data-testid*="Popover"] > div:not(:has(> button)){
-        background: #FFAFA3 !important;
     }
     div[data-testid*="Popover"] > div > button {
         padding-right: 0.6rem !important;
@@ -54,25 +52,17 @@ st.markdown("""
         border: 0 !important;
     }
     .st-key-convo_save {
-        background: #FFD3C6 !important;
         border-radius: 10px !important;
-        border: 1.5px solid #FFAFA3 !important;
+        border: 1.5px solid !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
     .st-key-convo_save_option {
-        border: 1.5px solid #FFAFA3 !important;
+        border: 1.5px solid !important;
         border-radius: 10px !important;
         padding: 0.5rem !important;
     }
-    .st-key-summary {
-        color: #FF5974 !important;
-    }
 
-    [data-testid="stChatMessageAvatarContainer"] {
-        display: none !important;
-    }
-    
 """, unsafe_allow_html=True) 
 
 
