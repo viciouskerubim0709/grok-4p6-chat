@@ -471,6 +471,25 @@ with st.sidebar:
             )
 
 
+st.markdown(
+    """
+    <style>
+    /* 채팅 메시지 내의 아바타 컨테이너를 숨깁니다 */
+    [data-testid="stChatMessageAvatar"] {
+        display: none !important;
+    }
+    /* 아바타가 사라진 빈 자리를 채우기 위해 여백을 조절합니다 */
+    [data-testid="stChatMessageContent"] {
+        margin-left: 0px !important;
+    }
+    </style>
+    """,
+    unsafe_allow_index=True,
+    unsafe_allow_html=True
+)
+
+
+
 # ====================== 타이틀 꾸미기 ======================
 st.markdown("""
     <style>
@@ -489,7 +508,7 @@ st.markdown("""
 
 # ====================== 메인 채팅 (다중 이미지 지원 + 이전 버전 호환) ======================
 for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
-    with st.chat_message(msg["role"], avatar=None):
+    with st.chat_message(msg["role"]):
         if msg["role"] == "user":
             st.markdown(msg.get("content", ""))
             if "image_urls" in msg and msg.get("image_urls"):
