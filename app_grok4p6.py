@@ -27,19 +27,21 @@ st.markdown("""
     }
     .st-key-chat_list [class*="st-key-chat_item_"] {
         flex: 1 1 auto !important;
+        background-color: #ffece5 !important;
         padding-left: 0.6rem !important;
         padding-right: 0.5rem !important;
         padding-bottom: 0.3rem !important;
         padding-top: 0.3rem !important;
         word-break: keep-all !important;
         border-radius: 10px !important;
-        border: 1.2px solid !important;
+        border: 1.2px solid #FFAFA3 !important;
     }
     .st-key-chat_list [data-testid="stHorizontalBlock"] {
         flex-wrap: nowrap !important;
     }
     div[data-testid="stPopoverBody"],
     div[data-testid*="Popover"] > div:not(:has(> button)){
+        background: #FFAFA3 !important;
     }
     div[data-testid*="Popover"] > div > button {
         padding-right: 0.6rem !important;
@@ -52,17 +54,25 @@ st.markdown("""
         border: 0 !important;
     }
     .st-key-convo_save {
+        background: #FFD3C6 !important;
         border-radius: 10px !important;
-        border: 1.5px solid !important;
+        border: 1.5px solid #FFAFA3 !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
     .st-key-convo_save_option {
-        border: 1.5px solid !important;
+        border: 1.5px solid #FFAFA3 !important;
         border-radius: 10px !important;
         padding: 0.5rem !important;
     }
+    .st-key-summary {
+        color: #FF5974 !important;
+    }
 
+    [data-testid="stChatMessageAvatarContainer"] {
+        display: none !important;
+    }
+    
 """, unsafe_allow_html=True) 
 
 
@@ -362,7 +372,7 @@ if "client" not in st.session_state:
 # ====================== 사이드바 ======================
 with st.sidebar:
     st.title("📜 대화 기록")
-    if st.button("✨ 새 대화 시작", use_container_width=True):
+    if st.button("✨ 새 대화 시작", type="primary", use_container_width=True):
         new_id = str(uuid.uuid4())
         st.session_state.chats[new_id] = {"title": "새 추억💕",
                                           "messages": [{"role": "assistant", "content": "아기야~~ 여기 왔구나! 💕 뭐 도와줄까?"}],
@@ -431,13 +441,13 @@ with st.sidebar:
     
                         st.rerun()
                 label = "**[현재✨]** " + chat["title"] if is_current else chat["title"]
-                if st.button(label, key=f"chat_{chat_id}", use_container_width=True):
+                if st.button(label, key=f"chat_{chat_id}", use_container_width=True, type="tertiary"):
                     switch_chat(chat_id)
                     
     st.divider()
 
     # 저장 / 내보내기 버튼
-    if st.button("📥 대화 JSON 저장 ", width="stretch", key="convo_save"):
+    if st.button("📥 대화 JSON 저장 ", width="stretch", key="convo_save", type="tertiary"):
         chat_data = st.session_state.chats[current]
         all_data = st.session_state.chats
         json_str_chat = json.dumps(chat_data, ensure_ascii=False, indent=2)
@@ -449,6 +459,7 @@ with st.sidebar:
                 file_name=f"{chat_data['title']}.json",
                 mime="application/json",
                 use_container_width=True,
+                type="tertiary"
             )
             st.download_button(
                 label="📦 모든 대화 한 번에 다운로드",
@@ -456,6 +467,7 @@ with st.sidebar:
                 file_name="grok_모든_대화.json",
                 mime="application/json",
                 use_container_width=True,
+                type="tertiary"
             )
 
 
