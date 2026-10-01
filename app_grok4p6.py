@@ -27,7 +27,7 @@ st.markdown("""
     }
     .st-key-chat_list [class*="st-key-chat_item_"] {
         flex: 1 1 auto !important;
-        background-color: #ffece5 !important;
+        background-color: transparent !important;
         padding-left: 0.6rem !important;
         padding-right: 0.5rem !important;
         padding-bottom: 0.3rem !important;
