@@ -70,6 +70,13 @@ st.markdown("""
     }
 """, unsafe_allow_html=True) 
 
+st.html("""
+    <style>
+    [data-testid="stChatMessageAvatarContainer"] {
+        display: none !important;
+    }
+    </style>
+""")
 
 # 한국 시간 기준
 kst = pytz.timezone('Asia/Seoul')
