@@ -504,6 +504,18 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+st.markdown(
+    """
+    <style>
+    [data-testid="stChatMessageAvatarUser"],
+    [data-testid="stChatMessageAvatarAssistant"] {
+        display: none;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # ====================== 메인 채팅 (다중 이미지 지원 + 이전 버전 호환) ======================
 for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
     with st.chat_message(msg["role"]):
