@@ -382,7 +382,7 @@ with st.sidebar:
     if st.button("✨ 새 대화 시작", type="primary", use_container_width=True):
         new_id = str(uuid.uuid4())
         st.session_state.chats[new_id] = {"title": "새 추억💕",
-                                          "messages": [{"role": "", "content": ""}],
+                                          "messages": [{"role": "assistant", "content": ""}],
                                           "created_at": current_time.isoformat(),
                                           "updated_at": current_time.isoformat()}
         st.session_state.current_session = new_id
@@ -544,7 +544,7 @@ for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
                 # === 🌿 브랜치 버튼 추가 === 
                 if st.button("➕", key=f"branch_{current}_{idx}", help="이 지점부터 새 대화 시작", type="tertiary"):
                     # 1. 현재 메시지까지 복사 (idx 포함)
-                    branch_messages = st.session_state.chats[current]["messages"][:idx + 1].copy()
+                    branch_messages = st.session_state.chats[current]["messages"][1:idx + 1].copy()
             
                     # 2. 새 채팅 ID 만들기
                     new_branch_id = str(uuid.uuid4())
