@@ -11,10 +11,7 @@ import io
 from streamlit_javascript import st_javascript
 from pathlib import Path
 from st_copy import copy_button
-from memory import (
-    MEMORY_RULES, load_memory, memory_block,
-    edit_memory_tool_responses, commit_edit,
-)
+from memory import (MEMORY_RULES, load_memory, memory_block, edit_memory_tool_responses, commit_edit,)
 
 
 
