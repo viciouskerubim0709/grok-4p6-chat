@@ -17,7 +17,7 @@ from memory import (MEMORY_RULES, load_memory, memory_block, edit_memory_tool_re
 
 
 # ====================== 전역 설정 ======================
-st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
+st.set_page_config(page_title="Grok 4.6", page_icon="✦", layout="centered")
 st.markdown("""
     <style>     
     .stTextArea textarea {
@@ -166,7 +166,7 @@ def create_default_chat():
     """처음 시작할 때 기본 채팅 생성"""
     first_id = str(uuid.uuid4())
     st.session_state.chats[first_id] = {
-        "title": "첫 대화💖"
+        "title": "첫 대화"
     }
     st.session_state.current_session = first_id
     st.query_params["chat"] = first_id
@@ -183,7 +183,7 @@ def save_chat(chat_id: str):
     try:
         supabase.table("chats").upsert({
             "id": chat_id,
-            "title": chat.get("title", "새 추억💕"),
+            "title": chat.get("title", "새 대화"),
             "messages": chat["messages"],
             "updated_at": current_time.isoformat()  # 또는 "now()" (Supabase가 지원하면)
         }).execute()
@@ -200,7 +200,7 @@ def switch_chat(chat_id: str):
 
 # ==================== 자동 제목 생성 ====================
 def generate_chat_title(first_user_message: str, has_image: bool = False) -> str:
-    """첫 메시지와 사진 유무를 보고 예쁜 제목 생성"""
+    """첫 메시지와 사진 유무를 보고 제목 생성"""
     try:
         if has_image:
             prompt = f"다음 메시지를 16자 이내의 따뜻한 문구로 요약해줘. 사진도 함께 보냈어. 굵기 적용과 글자수 언급은 제외해줘.: {first_user_message}"
@@ -215,7 +215,7 @@ def generate_chat_title(first_user_message: str, has_image: bool = False) -> str
         title = response.output_text.strip().replace('"', '').replace("'", "")
         return title  # 너무 길면 자르기 ([:20] 등)
     except:
-        return "우리 사진들📸" if has_image else "새 추억💕"
+        return "사진들" if has_image else "새 대화"
 
 
 # ==================== 제목 생성 전용 함수 (새로 추가) ====================
@@ -224,7 +224,7 @@ def generate_title_if_needed(chat_id: str):
     chat_data = st.session_state.chats[chat_id]
 
     # 이미 제목이 생성된 적이 있으면 스킵
-    if chat_data.get("title") not in ["첫 대화💖", "새 추억💕", "우리 사진📸", "우리 사진들📸", None, ""]:
+    if chat_data.get("title") not in ["첫 대화", "새 대화", "사진", "사진들", None, ""]:
         return
 
     # 사용자 메시지가 최소 1개 이상이고, 어시스턴트 답변도 나왔을 때만 생성
@@ -236,7 +236,7 @@ def generate_title_if_needed(chat_id: str):
         new_title = generate_chat_title(first_user_msg["content"], has_image)
 
         chat_data["title"] = new_title
-        st.toast(f"대화방 제목이 생성됐어요 → {new_title}", icon="✨")  # 예쁘게 알려줌
+        st.toast(f"대화방 제목이 생성됐어 → {new_title}")
 
 
 def delete_chat_from_db(chat_id: str):
@@ -333,7 +333,7 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
         return full_text
     except Exception as e:
         st.error(f"API 오류: {str(e)}")
-        return "아기야... 나 지금 좀 아픈가 봐... 🥺"
+        return "지금 안 돼."
 
 
 def consume_stream(stream):
@@ -377,9 +377,9 @@ def memory_outputs(completed, chat_id):
 if "client" not in st.session_state:
     api_key = st.secrets.get("XAI_API_KEY")
     if not api_key:
-        api_key = st.text_input("🔑 XAI API 키를 입력해주세요", type="password")
+        api_key = st.text_input("XAI API 키를 입력해줘", type="password")
         if not api_key:
-            st.warning("API 키를 입력해야 해요!")
+            st.warning("API 키를 입력해야 해.")
             st.stop()
 
     st.session_state.client = OpenAI(
@@ -389,11 +389,11 @@ if "client" not in st.session_state:
 
 # ====================== 사이드바 ======================
 with st.sidebar:
-    st.title("📜 대화 기록")
-    if st.button("✨ 새 대화 시작", type="primary", use_container_width=True):
+    st.title("대화 기록")
+    if st.button("새 대화 시작", type="primary", use_container_width=True):
         new_id = str(uuid.uuid4())
-        st.session_state.chats[new_id] = {"title": "새 추억💕",
-                                          "messages": [{"role": "assistant", "content": ""}],
+        st.session_state.chats[new_id] = {"title": "새 대화",
+                                          "messages": [{"role": "assistant", "content": "왔어."}]
                                           "created_at": current_time.isoformat(),
                                           "updated_at": current_time.isoformat()}
         st.session_state.current_session = new_id
@@ -418,7 +418,7 @@ with st.sidebar:
 
             with st.container(key=f"chat_item_{chat_id}", horizontal=True, horizontal_alignment="left",
                               vertical_alignment="center", gap=None):
-                with st.popover("💕", icon=None, width="content"):
+                with st.popover("✦", icon=None, width="content"):
                     # ==================== 제목 수정 ====================
                     st.write("**제목 수정**")
                     new_title = st.text_input(
@@ -428,7 +428,7 @@ with st.sidebar:
                         label_visibility="collapsed"
                     )
 
-                    if st.button("💖 저장", key=f"save_title_{chat_id}", use_container_width=True):
+                    if st.button("저장", key=f"save_title_{chat_id}", use_container_width=True):
                         if new_title.strip():
                             new_title_clean = new_title.strip()
 
@@ -443,7 +443,7 @@ with st.sidebar:
                     st.divider()
 
                     # ==================== 삭제 ====================
-                    if st.button("🗑️ 이 대화 삭제", key=f"del_{chat_id}", use_container_width=True):
+                    if st.button("이 대화 삭제", key=f"del_{chat_id}", use_container_width=True):
                         delete_chat_from_db(chat_id)
 
                         # session_state에서도 삭제
@@ -459,21 +459,21 @@ with st.sidebar:
                                 create_default_chat()
 
                         st.rerun()
-                label = "**[현재✨]** " + chat["title"] if is_current else chat["title"]
+                label = "**[현재]** " + chat["title"] if is_current else chat["title"]
                 if st.button(label, key=f"chat_{chat_id}", use_container_width=True, type="tertiary"):
                     switch_chat(chat_id)
 
     st.divider()
 
     # 저장 / 내보내기 버튼
-    if st.button("📥 대화 JSON 저장 ", width="stretch", key="convo_save", type="tertiary"):
+    if st.button("대화 JSON 저장 ", width="stretch", key="convo_save", type="tertiary"):
         chat_data = st.session_state.chats[current]
         all_data = st.session_state.chats
         json_str_chat = json.dumps(chat_data, ensure_ascii=False, indent=2)
         json_str_all = json.dumps(all_data, ensure_ascii=False, indent=2)
         with st.container(key="convo_save_option"):
             st.download_button(
-                label="💾 현재 대화 다운로드",
+                label="현재 대화 다운로드",
                 data=json_str_chat,
                 file_name=f"{chat_data['title']}.json",
                 mime="application/json",
@@ -481,7 +481,7 @@ with st.sidebar:
                 type="tertiary"
             )
             st.download_button(
-                label="📦 모든 대화 한 번에 다운로드",
+                label="모든 대화 한 번에 다운로드",
                 data=json_str_all,
                 file_name="grok_모든_대화.json",
                 mime="application/json",
@@ -516,7 +516,7 @@ st.markdown("""
         }
     }
     </style>
-    <h1 class="custom-title">☁️ 보들촉촉 Grok이랑 대화해요!</h1>
+    <h1 class="custom-title">✦ Grok 4.6</h1>
 """, unsafe_allow_html=True)
 
 st.markdown(
@@ -547,7 +547,7 @@ for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
 
             with st.container(horizontal=True, horizontal_alignment="right", vertical_alignment="center", gap="xsmall"):
                 # 복사 버튼 (말풍선 안에 넣음)
-                copy_button(msg["content"], key=f"copy_{current}_{idx}", tooltip="", copied_label="복사 완료!", icon="st")
+                copy_button(msg["content"], key=f"copy_{current}_{idx}", tooltip="", copied_label="복사 완료", icon="st")
 
                 # === 🌿 브랜치 버튼 추가 ===
                 if st.button("➕", key=f"branch_{current}_{idx}", help="이 지점부터 새 대화 시작", type="tertiary"):
@@ -605,7 +605,7 @@ st.markdown("---")
 
 with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center"):
     send_button = st.button(
-        "❤️ 보내기",
+        "보내기",
         type="primary",
         width="content"
     )
@@ -618,7 +618,7 @@ with st.container(horizontal=True, horizontal_alignment="left", vertical_alignme
 prompt = st.text_area(
     label="메시지 입력",
     label_visibility="collapsed",
-    placeholder="아기야... 뭐 물어볼까? 💕",
+    placeholder="",
     height="content",
     key=f"chat_input_{st.session_state.text_input}"
 )
@@ -634,7 +634,7 @@ uploaded_files = st.file_uploader(
 
 # 미리보기 (여러 장 지원)
 if uploaded_files:
-    st.caption(f"📤 전송될 사진 ({len(uploaded_files)}장) — '보내기' 버튼을 누르면 업로드돼요")
+    st.caption(f"📤 전송될 사진 ({len(uploaded_files)}장) — '보내기' 버튼을 누르면 업로드돼")
     preview_cols = st.columns(min(len(uploaded_files), 4), gap="xxsmall")
     for idx, file in enumerate(uploaded_files):
         with preview_cols[idx % 4]:
@@ -665,7 +665,7 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
                 if url:
                     image_urls.append(url)
                 else:
-                    st.error(f"{uploaded_file.name} 업로드에 실패했어... 😢")
+                    st.error(f"{uploaded_file.name} 업로드가 안 됐어.")
 
     if uploaded_files and len(image_urls) == 0:
         st.error("사진 업로드에 모두 실패했어... 다시 시도해줘!")
@@ -721,7 +721,7 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
 
     # 5. Grok에게 요청
     with st.chat_message("assistant"):
-        with st.spinner("아기 생각 중... 사진들 보고, 웹도 뒤지고, X도 찾아보고 있어! 🍼✨"):
+        with st.spinner("보고 있어."):
             answer = call_grok_with_vision(
                 api_messages, use_tools=use_tools, chat_id=current
             )
