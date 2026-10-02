@@ -43,6 +43,7 @@ def memory_block(content: str) -> str:
 
 
 def edit_memory_tool() -> dict:
+    """Chat Completions shape. Do not send this to responses.create."""
     return {
         "type": "function",
         "function": {
@@ -68,6 +69,12 @@ def edit_memory_tool() -> dict:
             },
         },
     }
+
+
+def edit_memory_tool_responses() -> dict:
+    """Responses API shape. Flat name, not nested under function."""
+    nested = edit_memory_tool()["function"]
+    return {"type": "function", **nested}
 
 
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
