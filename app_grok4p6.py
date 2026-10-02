@@ -706,13 +706,11 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
     # 5. Grok에게 요청
     with st.chat_message("assistant"):
         with st.spinner("아기 생각 중... 사진들 보고, 웹도 뒤지고, X도 찾아보고 있어! 🍼✨"):
-            answer, tool_calls = call_grok_with_vision(
+            answer = call_grok_with_vision(
                 api_messages, use_tools=use_tools, chat_id=current
             )
 
             st.write(answer)
-            if tool_calls:
-                st.info(f"Tool 호출됨: {tool_calls}")
 
     # 6. 어시스턴트 답변 저장 및 DB 저장
     st.session_state.chats[current]["messages"].append({"role": "assistant", "content": answer})
