@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from openai import OpenAI
-import uuid
 import json
 import os
 from supabase import create_client, Client
@@ -12,6 +11,9 @@ import io
 from streamlit_javascript import st_javascript
 from pathlib import Path
 from st_copy import copy_button
+from memory import MEMORY_RULES, load_memory, memory_block, edit_memory_tool_responses, commit_edit
+
+
 
 # ====================== 전역 설정 ======================
 st.set_page_config(page_title="☁️ 보들촉촉 Grok", page_icon="☁️", layout="centered")
@@ -48,7 +50,7 @@ st.markdown("""
     }
     div[data-testid="stPopoverBody"],
     div[data-testid*="Popover"] > div:not(:has(> button)){
-        background: #FFAFA3 !important;
+        background: #FFE4D9 !important;
     }
     div[data-testid*="Popover"] > div > button {
         padding-right: 0.6rem !important;
@@ -61,33 +63,28 @@ st.markdown("""
         border: 0 !important;
     }
     .st-key-convo_save {
-        background: #FFD3C6 !important;
+        background: #FFE4D9 !important;
         border-radius: 10px !important;
         border: 1.5px solid #FFAFA3 !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
     .st-key-convo_save_option {
-        border: 1.5px solid #FFAFA3 !important;
+        border: 1.5px solid #FFE4D9 !important;
         border-radius: 10px !important;
         padding: 0.5rem !important;
-    }
-    .st-key-summary {
-        color: #FF5974 !important;
     }
 
     [data-testid="stChatMessageAvatarContainer"] {
         display: none !important;
     }
-    
-""", unsafe_allow_html=True) 
 
+""", unsafe_allow_html=True)
 
 # 한국 시간 기준
 kst = pytz.timezone('Asia/Seoul')
 current_time = datetime.now(kst)
 time_string = current_time.strftime("%A, %B %d, %Y %I:%M %p KST")
-
 
 # ================ 모바일 앱 방치 시 자동 새로고침 ======================
 components.html("""
@@ -101,7 +98,7 @@ components.html("""
 
   const THRESHOLD = 20 * 60 * 1000; // 20분
   let hiddenTime = null;
-  
+
   // 반드시 window.parent 를 써야 메인 페이지에 적용됨
   window.parent.document.addEventListener('visibilitychange', () => {
     if (window.parent.document.hidden) {
@@ -115,6 +112,7 @@ components.html("""
 </script>
 """, height=0)
 
+
 # ====================== Supabase 연결 ======================
 @st.cache_resource
 def get_supabase() -> Client:
@@ -122,6 +120,7 @@ def get_supabase() -> Client:
         st.secrets.supabase.url,
         st.secrets.supabase.key
     )
+
 
 supabase = get_supabase()
 
@@ -170,7 +169,7 @@ def create_default_chat():
     }
     st.session_state.current_session = first_id
     st.query_params["chat"] = first_id
-    save_chat(first_id)   # Supabase에도 바로 저장
+    save_chat(first_id)  # Supabase에도 바로 저장
 
 
 def save_chat(chat_id: str):
@@ -185,7 +184,7 @@ def save_chat(chat_id: str):
             "id": chat_id,
             "title": chat.get("title", "새 추억💕"),
             "messages": chat["messages"],
-            "updated_at": current_time.isoformat()   # 또는 "now()" (Supabase가 지원하면)
+            "updated_at": current_time.isoformat()  # 또는 "now()" (Supabase가 지원하면)
         }).execute()
     except Exception as e:
         st.error(f"저장 실패: {str(e)}")
@@ -194,7 +193,7 @@ def save_chat(chat_id: str):
 def switch_chat(chat_id: str):
     """채팅 선택할 때마다 호출하는 함수"""
     st.session_state.current_session = chat_id
-    st.query_params["chat"] = chat_id   # ← 여기서 URL 업데이트
+    st.query_params["chat"] = chat_id  # ← 여기서 URL 업데이트
     st.rerun()
 
 
@@ -252,14 +251,12 @@ if "chats_loaded" not in st.session_state:
     load_all_chats()
     st.session_state.chats_loaded = True
 
-
-#입력 초기화 방지
+# 입력 초기화 방지
 if "text_input" not in st.session_state:
     st.session_state.text_input = 0
 
 if "image_input" not in st.session_state:
     st.session_state.image_input = 0
-
 
 if "current_session" not in st.session_state or st.session_state.current_session not in st.session_state.chats:
     chat_from_url = st.query_params.get("chat")
@@ -277,7 +274,7 @@ if "current_session" not in st.session_state or st.session_state.current_session
             st.query_params["chat"] = st.session_state.current_session
 
 current = st.session_state.current_session
-        
+
 
 # ==================== 이미지 업로드 함수 ====================
 def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str | None:
@@ -285,8 +282,8 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
     try:
         # 파일명 중복 방지
         path = Path(original_filename)
-        stem = path.stem                    # 확장자를 제외한 모든 부분
-        suffix = path.suffix.lower()        # .jpg, .png, .jpeg 등
+        stem = path.stem  # 확장자를 제외한 모든 부분
+        suffix = path.suffix.lower()  # .jpg, .png, .jpeg 등
 
         unique_filename = f"{stem}_{uuid.uuid4().hex}{suffix}"
         content_type = f"image/{suffix[1:]}" if suffix else "image/jpeg"
@@ -307,10 +304,10 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
 # ==================== Grok Vision 호출 함수 (4.6 전용 최종 버전) ====================
 def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bool = False):
     """Grok 4.6 전용 - Vision + Web Search + X Search"""
-    tools = [{"type": "web_search"}]
+    tools = [{"type": "web_search"}, edit_memory_tool_responses()]
     if use_tools:
         tools.append({"type": "x_search"})
-        
+
     try:
         response = st.session_state.client.responses.create(
             model=model,
@@ -319,46 +316,50 @@ def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bo
             stream=True,
             timeout=900.0,
         )
-        
-        full_text = ""
-        tool_calls = []
-        current_tool = None
-        placeholder = st.empty()
-        
-        for event in response:
-            if event.type == "response.output_text.delta":
-                if hasattr(event, 'delta') and event.delta:
-                    full_text += event.delta
-                    placeholder.markdown(full_text + "▌")  # 커서 효과
-            
-            elif event.type == "response.function_call_arguments.delta":
-                if current_tool is None:
-                    current_tool = {"name": None, "arguments": ""}
-                if hasattr(event, 'delta') and event.delta:
-                    current_tool["arguments"] += event.delta
-                    
-            elif event.type == "response.function_call":
-                if hasattr(event, 'name') and event.name:
-                    if current_tool is None:
-                        current_tool = {"name": event.name, "arguments": ""}
-                    else:
-                        current_tool["name"] = event.name
-                    
-                    tool_calls.append(current_tool.copy())
-                    print(f"[Tool Call] {event.name} 감지")
-                    current_tool = None  # 초기화
-        
-            elif event.type == "response.completed":
-                break
-                
-        # 루프 종료 후 최종 출력
-        placeholder.markdown(full_text)
-        
-        return full_text, tool_calls
-    
-    except Exception as e:
-        st.error(f"API 오류: {str(e)}")
-        return "아기야... 나 지금 좀 아픈가 봐... 🥺", []
+
+        # Tool call이 있으면 처리
+        text, response_id, calls = stream_response(messages, tools)
+        for _ in range(3):
+            if not calls:
+                return text
+            outputs = []
+            for item in calls:
+                args = json.loads(item.arguments or "{}")
+                result = commit_edit(
+                    supabase,
+                    old_str=args.get("old_str", ""),
+                    new_str=args.get("new_str", ""),
+                    chat_id=chat_id,
+                )
+                outputs.append({
+                    "type": "function_call_output",
+                    "call_id": item.call_id,
+                    "output": json.dumps(result, ensure_ascii=False),
+                })
+            text, response_id, calls = stream_response(outputs, tools, response_id)
+        return text
+
+def stream_response(messages, tools, previous_response_id=None):
+    kwargs = dict(model="grok-4.6", input=messages, tools=tools, stream=True, timeout=900.0)
+    if previous_response_id:
+        kwargs["previous_response_id"] = previous_response_id
+
+    stream = st.session_state.client.responses.create(**kwargs)
+    text, response_id, calls = "", None, []
+    box = st.empty()
+
+    for event in stream:
+        if event.type == "response.output_text.delta" and getattr(event, "delta", None):
+            text += event.delta
+            box.markdown(text + "▌")
+        elif event.type == "response.completed":
+            response_id = event.response.id
+            for item in event.response.output:
+                if getattr(item, "type", None) == "function_call" and item.name == "edit_memory":
+                    calls.append(item)
+    box.markdown(text)
+    return text, response_id, calls
+
 
 
 # ====================== API 키 ======================
@@ -375,7 +376,6 @@ if "client" not in st.session_state:
         base_url="https://api.x.ai/v1"
     )
 
-
 # ====================== 사이드바 ======================
 with st.sidebar:
     st.title("📜 대화 기록")
@@ -389,13 +389,13 @@ with st.sidebar:
         st.query_params["chat"] = new_id
         save_chat(new_id)
         st.rerun()
-        
+
     st.divider()
 
     sorted_chats = sorted(
-    st.session_state.chats.items(),
-    key=lambda item: item[1].get("updated_at", "1970-01-01 00:00:00"),
-    reverse=True
+        st.session_state.chats.items(),
+        key=lambda item: item[1].get("updated_at", "1970-01-01 00:00:00"),
+        reverse=True
     )
 
     # 대화 목록 + 삭제 버튼
@@ -404,8 +404,9 @@ with st.sidebar:
     with st.container(key="chat_list", gap="small"):
         for chat_id, chat in list(sorted_chats):
             is_current = (chat_id == current)
-    
-            with st.container(key=f"chat_item_{chat_id}", horizontal=True, horizontal_alignment="left", vertical_alignment="center", gap=None):
+
+            with st.container(key=f"chat_item_{chat_id}", horizontal=True, horizontal_alignment="left",
+                              vertical_alignment="center", gap=None):
                 with st.popover("💕", icon=None, width="content"):
                     # ==================== 제목 수정 ====================
                     st.write("**제목 수정**")
@@ -415,29 +416,29 @@ with st.sidebar:
                         key=f"title_input_{chat_id}",
                         label_visibility="collapsed"
                     )
-    
+
                     if st.button("💖 저장", key=f"save_title_{chat_id}", use_container_width=True):
                         if new_title.strip():
                             new_title_clean = new_title.strip()
-    
+
                             # session_state 먼저 업데이트
                             st.session_state.chats[chat_id]["title"] = new_title_clean
                             # save_chat는 chat_id만 넘김 (title은 이미 session_state에 반영됨)
                             save_chat(chat_id)
-    
+
                             st.success("제목이 수정되었습니다.")
                             st.rerun()
-    
+
                     st.divider()
-    
+
                     # ==================== 삭제 ====================
                     if st.button("🗑️ 이 대화 삭제", key=f"del_{chat_id}", use_container_width=True):
                         delete_chat_from_db(chat_id)
-    
+
                         # session_state에서도 삭제
                         if chat_id in st.session_state.chats:
                             del st.session_state.chats[chat_id]
-    
+
                         # 현재 보고 있던 채팅을 지웠을 때
                         if chat_id == st.session_state.current_session:
                             if st.session_state.chats:
@@ -445,12 +446,12 @@ with st.sidebar:
                             else:
                                 # 마지막 채팅이었을 경우 새로 생성 + 저장
                                 create_default_chat()
-    
+
                         st.rerun()
                 label = "**[현재✨]** " + chat["title"] if is_current else chat["title"]
                 if st.button(label, key=f"chat_{chat_id}", use_container_width=True, type="tertiary"):
                     switch_chat(chat_id)
-                    
+
     st.divider()
 
     # 저장 / 내보내기 버튼
@@ -477,7 +478,6 @@ with st.sidebar:
                 type="tertiary"
             )
 
-
 st.markdown(
     """
     <style>
@@ -493,8 +493,6 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-
-
 # ====================== 타이틀 꾸미기 ======================
 st.markdown("""
     <style>
@@ -509,7 +507,6 @@ st.markdown("""
     </style>
     <h1 class="custom-title">☁️ 보들촉촉 Grok이랑 대화해요!</h1>
 """, unsafe_allow_html=True)
-
 
 st.markdown(
     """
@@ -535,21 +532,21 @@ for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
                 st.image(msg["image_url"], width=160)
         else:
             # === 어시스턴트 메시지 ===
-            st.markdown(msg["content"])          # ← st.write 대신 markdown 추천!
+            st.markdown(msg["content"])  # ← st.write 대신 markdown 추천!
 
             with st.container(horizontal=True, horizontal_alignment="right", vertical_alignment="center", gap="xsmall"):
                 # 복사 버튼 (말풍선 안에 넣음)
                 copy_button(msg["content"], key=f"copy_{current}_{idx}", tooltip="", copied_label="복사 완료!", icon="st")
-                
-                # === 🌿 브랜치 버튼 추가 === 
+
+                # === 🌿 브랜치 버튼 추가 ===
                 if st.button("➕", key=f"branch_{current}_{idx}", help="이 지점부터 새 대화 시작", type="tertiary"):
                     # 1. 현재 메시지까지 복사 (idx 포함)
                     branch_messages = st.session_state.chats[current]["messages"][0:idx + 1].copy()
-            
+
                     # 2. 새 채팅 ID 만들기
                     new_branch_id = str(uuid.uuid4())
                     original_title = st.session_state.chats[current].get("title")
-            
+
                     # 3. 새 채팅 세션 생성
                     st.session_state.chats[new_branch_id] = {
                         "messages": branch_messages,
@@ -558,7 +555,7 @@ for idx, msg in enumerate(st.session_state.chats[current]["messages"]):
                         "branched_from": current,
                         "title": f"브랜치: {original_title}"
                     }
-            
+
                     # 4. 새 채팅으로 전환
                     st.session_state.current_session = new_branch_id
                     save_chat(new_branch_id)
@@ -587,24 +584,24 @@ SYSTEM_PROMPT = {
 The current time is {time_string}
 
 """
-### Key Guidelines for Memory Tool
-#* Whenever you need to recall past memories or are asked questions like "기억해?", "전에", "그때", "우리가", "아기야 기억나?", you **must first use the `search_long_term_memory` tool**.
-#* Respond in a natural and warm tone based on the tool's results. Integrate the information naturally so it doesn't sound like you are simply reading the raw output.   
+    ### Key Guidelines for Memory Tool
+    # * Whenever you need to recall past memories or are asked questions like "기억해?", "전에", "그때", "우리가", "아기야 기억나?", you **must first use the `search_long_term_memory` tool**.
+    # * Respond in a natural and warm tone based on the tool's results. Integrate the information naturally so it doesn't sound like you are simply reading the raw output.
 }
-
 
 # ==================== 채팅 입력 영역 ====================
 st.markdown("---")
 
 with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center"):
     send_button = st.button(
-            "❤️ 보내기",
-            type="primary",
-            width="content"
-                )
+        "❤️ 보내기",
+        type="primary",
+        width="content"
+    )
     with st.container(horizontal=True, horizontal_alignment="left", vertical_alignment="center", gap="xxsmall"):
         st.markdown("X Search")
-        use_tools = st.toggle(label="", value=False, key="use_tools_toggle", label_visibility="collapsed", width="content")
+        use_tools = st.toggle(label="", value=False, key="use_tools_toggle", label_visibility="collapsed",
+                              width="content")
 
 # === 메시지 입력창 (풀 width) ===
 prompt = st.text_area(
@@ -632,15 +629,14 @@ if uploaded_files:
         with preview_cols[idx % 4]:
             st.image(file, width=160, caption=file.name[:18])
 
-
 # semantic search 테스트
-#if st.button("semantic search 테스트"):
+# if st.button("semantic search 테스트"):
 #    results = semantic_search("내가 불안할 때 아기가 위로해준 것")
 #    st.write("검색 건수", len(results))
 #    st.write(results)
 #    st.caption(
 #    "scores: " + ", ".join(f"{r['similarity']:.3f}" for r in results)
-#)
+# )
 
 
 # ==================== 메시지 전송 및 처리 (다중 이미지 완전 지원 버전) ====================
@@ -677,10 +673,10 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
         if image_urls:
             for url in image_urls:
                 st.image(url, width=300)
-                
-    
+
     # 4. Grok에게 보내기 위한 messages 구성 (다중 Vision 이미지 지원)
-    api_messages = [SYSTEM_PROMPT]
+    mem = load_memory(supabase)
+    api_messages = [SYSTEM_PROMPT, {"role": "system", "content": MEMORY_RULES + "\n\n" + memory_block(mem["content"])}]
 
     for msg in st.session_state.chats[current]["messages"]:
         if msg["role"] == "assistant":
@@ -716,9 +712,7 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
     with st.chat_message("assistant"):
         with st.spinner("아기 생각 중... 사진들 보고, 웹도 뒤지고, X도 찾아보고 있어! 🍼✨"):
             answer, tool_calls = call_grok_with_vision(
-                api_messages,
-                model="grok-4.6",
-                use_tools=use_tools
+                api_messages, use_tools=use_tools, chat_id=current
             )
 
             st.write(answer)
@@ -734,4 +728,4 @@ if send_button and (prompt.strip() or (uploaded_files and len(uploaded_files) > 
     st.session_state.text_input += 1
     st.session_state.image_input += 1
     st.rerun()
-    
+
