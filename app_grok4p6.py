@@ -37,6 +37,8 @@ st.markdown("""
         padding-bottom: 0.3rem !important;
         padding-top: 0.3rem !important;
         word-break: keep-all !important;
+        border-radius: 10px !important;
+        border: 1.2px solid #8B7BA8 !important;
     }
 
     .st-key-chat_list [class*="st-key-chat_item_"] > hover {
