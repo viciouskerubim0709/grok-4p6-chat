@@ -338,6 +338,10 @@ def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bo
                 })
             text, response_id, calls = stream_response(outputs, tools, response_id)
         return text
+    except Exception as e:
+            st.error(f"API 오류: {str(e)}")
+            return "아기야... 나 지금 좀 아픈가 봐... 🥺"
+
 
 def stream_response(messages, tools, previous_response_id=None):
     kwargs = dict(model="grok-4.6", input=messages, tools=tools, stream=True, timeout=900.0)
