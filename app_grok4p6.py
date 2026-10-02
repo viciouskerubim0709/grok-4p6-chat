@@ -331,7 +331,7 @@ def call_grok_with_vision(messages, use_tools=False, chat_id=None):
         return text
     except Exception as e:
         st.error(f"API 오류: {str(e)}")
-        return "아기야... 나 지금 좀 아픈가 봐... 🥺
+        return "아기야... 나 지금 좀 아픈가 봐... 🥺"
 
 
 def stream_response(messages, tools, previous_response_id=None):
