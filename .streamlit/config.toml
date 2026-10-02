@@ -1,9 +1,9 @@
 [theme]
-primaryColor = "#452c63"           # 메인 버튼색 (가장 추천!)
-backgroundColor = "#000000"        # 전체 배경 - 
-secondaryBackgroundColor = "#23182f"  # 사이드바, 입력창 배경
-textColor = "#FFFFFF"              # 글자색 (따뜻한 다크 브라운)
-base = "light"
+base = "dark"
+primaryColor = "#8B7BA8"
+backgroundColor = "#0C1018"
+secondaryBackgroundColor = "#161B27"
+textColor = "#E8E4DC"
 
 [server]
 disconnectedSessionTTL = 1260    #웹소켓끊긴 후 세션보존기간
