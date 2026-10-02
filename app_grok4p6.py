@@ -1,6 +1,7 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from openai import OpenAI
+import uuid
 import json
 import os
 from supabase import create_client, Client
