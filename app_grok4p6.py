@@ -51,7 +51,7 @@ st.markdown("""
     }
     div[data-testid="stPopoverBody"],
     div[data-testid*="Popover"] > div:not(:has(> button)){
-        background: #FFE4D9 !important;
+        background: #8B7BA8 !important;
     }
     div[data-testid*="Popover"] > div > button {
         padding-right: 0.6rem !important;
