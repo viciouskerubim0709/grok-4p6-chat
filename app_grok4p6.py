@@ -64,9 +64,8 @@ st.markdown("""
         border: 0 !important;
     }
     .st-key-convo_save {
-        background: #FFE4D9 !important;
+        background: transparent !important;
         border-radius: 10px !important;
-        border: 1.5px solid #FFAFA3 !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
