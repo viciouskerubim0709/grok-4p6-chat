@@ -303,22 +303,12 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
 
 
 # ==================== Grok Vision 호출 함수 (4.6 전용 최종 버전) ====================
-def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bool = False):
-    """Grok 4.6 전용 - Vision + Web Search + X Search"""
+def call_grok_with_vision(messages, use_tools=False, chat_id=None):
     tools = [{"type": "web_search"}, edit_memory_tool_responses()]
     if use_tools:
         tools.append({"type": "x_search"})
 
     try:
-        response = st.session_state.client.responses.create(
-            model=model,
-            input=messages,
-            tools=tools,
-            stream=True,
-            timeout=900.0,
-        )
-
-        # Tool call이 있으면 처리
         text, response_id, calls = stream_response(messages, tools)
         for _ in range(3):
             if not calls:
@@ -340,8 +330,8 @@ def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bo
             text, response_id, calls = stream_response(outputs, tools, response_id)
         return text
     except Exception as e:
-            st.error(f"API 오류: {str(e)}")
-            return "아기야... 나 지금 좀 아픈가 봐... 🥺"
+        st.error(f"API 오류: {str(e)}")
+        return "아기야... 나 지금 좀 아픈가 봐... 🥺
 
 
 def stream_response(messages, tools, previous_response_id=None):
