@@ -303,58 +303,74 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
 
 
 # ==================== Grok Vision 호출 함수 (4.6 전용 최종 버전) ====================
-def call_grok_with_vision(messages, use_tools=False, chat_id=None):
+def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=None):
     tools = [{"type": "web_search"}, edit_memory_tool_responses()]
     if use_tools:
         tools.append({"type": "x_search"})
 
     try:
-        text, response_id, calls = stream_response(messages, tools)
-        for _ in range(3):
-            if not calls:
-                return text
-            outputs = []
-            for item in calls:
-                args = json.loads(item.arguments or "{}")
-                result = commit_edit(
-                    supabase,
-                    old_str=args.get("old_str", ""),
-                    new_str=args.get("new_str", ""),
-                    chat_id=chat_id,
-                )
-                outputs.append({
-                    "type": "function_call_output",
-                    "call_id": item.call_id,
-                    "output": json.dumps(result, ensure_ascii=False),
-                })
-            text, response_id, calls = stream_response(outputs, tools, response_id)
-        return text
+        response = st.session_state.client.responses.create(
+            model=model,
+            input=messages,
+            tools=tools,
+            stream=True,
+            timeout=900.0,
+        )
+        full_text, completed = consume_stream(response)
+        tool_outputs = memory_outputs(completed, chat_id) if completed else []
+
+        if tool_outputs:
+            response = st.session_state.client.responses.create(
+                model=model,
+                input=tool_outputs,
+                tools=tools,
+                previous_response_id=completed.id,
+                stream=True,
+                timeout=900.0,
+            )
+            full_text, _ = consume_stream(response)
+
+        return full_text
     except Exception as e:
         st.error(f"API 오류: {str(e)}")
         return "아기야... 나 지금 좀 아픈가 봐... 🥺"
 
 
-def stream_response(messages, tools, previous_response_id=None):
-    kwargs = dict(model="grok-4.6", input=messages, tools=tools, stream=True, timeout=900.0)
-    if previous_response_id:
-        kwargs["previous_response_id"] = previous_response_id
-
-    stream = st.session_state.client.responses.create(**kwargs)
-    text, response_id, calls = "", None, []
-    box = st.empty()
+def consume_stream(stream):
+    full_text = ""
+    completed = None
+    placeholder = st.empty()
 
     for event in stream:
         if event.type == "response.output_text.delta" and getattr(event, "delta", None):
-            text += event.delta
-            box.markdown(text + "▌")
+            full_text += event.delta
+            placeholder.markdown(full_text + "▌")
         elif event.type == "response.completed":
-            response_id = event.response.id
-            for item in event.response.output:
-                if getattr(item, "type", None) == "function_call" and item.name == "edit_memory":
-                    calls.append(item)
-    box.markdown(text)
-    return text, response_id, calls
+            completed = getattr(event, "response", None)
+            break
 
+    placeholder.markdown(full_text)
+    return full_text, completed
+
+
+def memory_outputs(completed, chat_id):
+    outputs = []
+    for item in getattr(completed, "output", []) or []:
+        if getattr(item, "type", None) != "function_call" or item.name != "edit_memory":
+            continue
+        args = json.loads(item.arguments or "{}")
+        result = commit_edit(
+            supabase,
+            old_str=args.get("old_str", ""),
+            new_str=args.get("new_str", ""),
+            chat_id=chat_id,
+        )
+        outputs.append({
+            "type": "function_call_output",
+            "call_id": item.call_id,
+            "output": json.dumps(result, ensure_ascii=False),
+        })
+    return outputs
 
 
 # ====================== API 키 ======================
