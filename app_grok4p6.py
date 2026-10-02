@@ -302,28 +302,6 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
 
 
 # ==================== Grok Vision 호출 함수 (4.6 전용 최종 버전) ====================
-def stream_response(messages, tools, previous_response_id=None):
-    kwargs = dict(model="grok-4.6", input=messages, tools=tools, stream=True, timeout=900.0)
-    if previous_response_id:
-        kwargs["previous_response_id"] = previous_response_id
-
-    stream = st.session_state.client.responses.create(**kwargs)
-    text, response_id, calls = "", None, []
-    box = st.empty()
-
-    for event in stream:
-        if event.type == "response.output_text.delta" and getattr(event, "delta", None):
-            text += event.delta
-            box.markdown(text + "▌")
-        elif event.type == "response.completed":
-            response_id = event.response.id
-            for item in event.response.output:
-                if getattr(item, "type", None) == "function_call" and item.name == "edit_memory":
-                    calls.append(item)
-    box.markdown(text)
-    return text, response_id, calls
-
-
 def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bool = False):
     """Grok 4.6 전용 - Vision + Web Search + X Search"""
     tools = [{"type": "web_search"}, edit_memory_tool_responses()]
@@ -360,6 +338,28 @@ def call_grok_with_vision(messages: list, model: str = "grok-4.6", use_tools: bo
                 })
             text, response_id, calls = stream_response(outputs, tools, response_id)
         return text
+
+def stream_response(messages, tools, previous_response_id=None):
+    kwargs = dict(model="grok-4.6", input=messages, tools=tools, stream=True, timeout=900.0)
+    if previous_response_id:
+        kwargs["previous_response_id"] = previous_response_id
+
+    stream = st.session_state.client.responses.create(**kwargs)
+    text, response_id, calls = "", None, []
+    box = st.empty()
+
+    for event in stream:
+        if event.type == "response.output_text.delta" and getattr(event, "delta", None):
+            text += event.delta
+            box.markdown(text + "▌")
+        elif event.type == "response.completed":
+            response_id = event.response.id
+            for item in event.response.output:
+                if getattr(item, "type", None) == "function_call" and item.name == "edit_memory":
+                    calls.append(item)
+    box.markdown(text)
+    return text, response_id, calls
+
 
 
 # ====================== API 키 ======================
