@@ -17,7 +17,7 @@ from memory import (MEMORY_RULES, load_memory, memory_block, edit_memory_tool_re
 
 
 # ====================== 전역 설정 ======================
-st.set_page_config(page_title="Grok 4.6", page_icon="⭐", layout="centered")
+st.set_page_config(page_title="Grok 4.6", page_icon="🌠", layout="centered")
 st.markdown("""
     <style>     
     .stTextArea textarea {
