@@ -84,7 +84,8 @@ def edit_memory_tool() -> dict:
                 "required": ["operations"],
                 "additionalProperties": False,
             },
-        }
+        },
+    }
 
 def edit_memory_tool_responses() -> dict:
     """Responses API shape. Flat name, not nested under function."""
