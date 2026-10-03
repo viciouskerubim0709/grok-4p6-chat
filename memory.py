@@ -66,6 +66,8 @@ def edit_memory_tool() -> dict:
                         "maxItems": 16,
                         "items": {
                             "type": "object",
+                            "additionalProperties": False,
+                            "required": ["old_str", "new_str"],
                             "properties": {
                                 "old_str": {
                                     "type": "string",
@@ -76,13 +78,9 @@ def edit_memory_tool() -> dict:
                                     "description": "Replacement. Empty string deletes old_str.",
                                 },
                             },
-                            "required": ["old_str", "new_str"],
-                            "additionalProperties": False,
                         },
                     }
                 },
-                "required": ["operations"],
-                "additionalProperties": False,
             },
         },
     }
@@ -106,19 +104,11 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
         raise ValueError(f"old_str matched {count} times")
     return content.replace(old_str, new_str, 1)
 
-def normalize_operations(args: dict) -> list[dict]:
-    ops = args.get("operations")
-    if ops:
-        if not isinstance(ops, list):
-            raise ValueError("operations must be a list")
-        return ops
-    return [{"old_str": args.get("old_str", ""), "new_str": args.get("new_str", "")}]
-
 def apply_operations(content: str, operations: list[dict]) -> str:
-    if not operations:
+    if not isinstance(operations, list) or len(operations) == 0:
         raise ValueError("operations is empty")
     if len(operations) > MAX_OPS:
-        raise ValueError(f"too many operations ({len(operations)} > {MAX_OPS})")
+        raise ValueError(f"too many operations: {len(operations)}")
 
     for i, op in enumerate(operations):
         if not isinstance(op, dict):
@@ -132,13 +122,6 @@ def apply_operations(content: str, operations: list[dict]) -> str:
         except ValueError as exc:
             raise ValueError(f"op[{i}]: {exc}") from exc
     return content
-
-def _op_type(old_str: str, new_str: str) -> str:
-    if old_str == "":
-        return "append"
-    if new_str == "":
-        return "delete"
-    return "replace"
 
 def _log(sb, *, version_before, version_after, operation, old_str, new_str, success, error, chat_id):
     sb.table("memory_edits").insert(
@@ -156,36 +139,28 @@ def _log(sb, *, version_before, version_after, operation, old_str, new_str, succ
     ).execute()
 
 
-def commit_edit(
-    sb,
-    old_str: str = "",
-    new_str: str = "",
-    operations: list | None = None,
-    chat_id: str | None = None,
-    retries: int = 2,
-) -> dict:
-    try:
-        ops = operations if operations is not None else normalize_operations(
-            {"old_str": old_str, "new_str": new_str}
-        )
-    except ValueError as exc:
-        return {"ok": False, "error": str(exc)}
+def _op_type(old_str: str, new_str: str) -> str:
+    if old_str == "":
+        return "append"
+    if new_str == "":
+        return "delete"
+    return "replace"
 
+
+def commit_edit(sb, operations: list[dict], chat_id: str | None = None, retries: int = 2) -> dict:
     for _ in range(retries + 1):
         current = load_memory(sb)
         try:
-            new_content = apply_operations(current["content"], ops)
+            new_content = apply_operations(current["content"], operations)
         except ValueError as exc:
-            fail_op = ops[0] if not ops else ops[min(
-                _fail_index(str(exc)), len(ops) - 1
-            )]
+            first = operations[0] if operations else {"old_str": "", "new_str": ""}
             _log(
                 sb,
                 version_before=current["version"],
                 version_after=None,
-                operation=_op_type(fail_op.get("old_str", ""), fail_op.get("new_str", "")),
-                old_str=fail_op.get("old_str", ""),
-                new_str=fail_op.get("new_str", ""),
+                operation="batch",
+                old_str=first.get("old_str", ""),
+                new_str=first.get("new_str", ""),
                 success=False,
                 error=str(exc),
                 chat_id=chat_id,
@@ -206,41 +181,21 @@ def commit_edit(
         )
         if updated.data:
             version_after = current["version"] + 1
-            for op in ops:
-                o = op.get("old_str", "")
-                n = op.get("new_str", "")
+            for op in operations:
+                old_str = op.get("old_str", "")
+                new_str = op.get("new_str", "")
                 _log(
                     sb,
                     version_before=current["version"],
                     version_after=version_after,
-                    operation=_op_type(o, n),
-                    old_str=o,
-                    new_str=n,
+                    operation=_op_type(old_str, new_str),
+                    old_str=old_str,
+                    new_str=new_str,
                     success=True,
                     error=None,
                     chat_id=chat_id,
                 )
-            return {
-                "ok": True,
-                "applied": len(ops),
-                "content": new_content,
-                "version": version_after,
-            }
+            return {"ok": True, "content": new_content, "version": version_after, "applied": len(operations)}
 
     current = load_memory(sb)
-    return {
-        "ok": False,
-        "error": "version conflict",
-        "content": current["content"],
-        "version": current["version"],
-    }
-
-
-def _fail_index(error: str) -> int:
-    # "op[2]: old_str not found" → 2
-    if error.startswith("op[") and "]" in error:
-        try:
-            return int(error[3:error.index("]")])
-        except ValueError:
-            return 0
-    return 0
+    return {"ok": False, "error": "version conflict", "content": current["content"], "version": current["version"]}
