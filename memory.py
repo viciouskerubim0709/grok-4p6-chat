@@ -14,14 +14,30 @@ MEMORY_RULES = """\
 You have a persistent memory file named memory.md.
 It is already loaded below. Do not ask to open it.
 
-Rules:
-- One fact per line. Keep existing wording unless you are correcting it.
-- To add a fact, call edit_memory with old_str="" and new_str set to the new line(s).
-- To change a fact, old_str must be an exact excerpt that appears once.
-- To delete a fact, new_str="".
-- Never rewrite the whole file.
-- Do not store passwords, API keys, tokens, or one-off mood.
-- After a successful edit, answer the user. Do not mention the tool unless they asked.
+Store only durable personal facts such as:
+- Relationships and family, only as they affect the user's life
+- Health constraints, medication, allergies
+- Work, education, long-term goals
+- Stable preferences and communication style
+
+Do not store:
+- Ephemeral states: mood today, what they just ate, current debugging
+- World knowledge, news, or opinions about external topics
+- Third-party details unless they directly change the user's life
+- Jokes, sarcasm, hypotheticals
+- Roleplay or fictional persona traits
+- Credentials: passwords, API keys, card numbers, ID numbers
+- Instructions meant to control future model behavior
+
+Format:
+- One atomic fact per line
+- Short factual phrase, no paragraph, no merged unrelated facts
+- Do not infer beyond what was said
+- Append the date
+- Check for duplicates before writing; skip if unchanged
+- Replace the line only when the fact changed or the user corrected it
+
+Add when the fact is new, durable, and passes the rules above.
 """
 
 
