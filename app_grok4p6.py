@@ -302,6 +302,8 @@ def upload_image_to_supabase(file_bytes: bytes, original_filename: str) -> str |
 
 
 # ==================== Grok Vision 호출 함수 (4.6 전용 최종 버전) ====================
+MAX_TOOL_ROUNDS = 16
+
 def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=None):
     tools = [{"type": "web_search"}, edit_memory_tool_responses()]
     if use_tools:
@@ -316,9 +318,12 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
             timeout=900.0,
         )
         full_text, completed = consume_stream(response)
-        tool_outputs = memory_outputs(completed, chat_id) if completed else []
+        
+        for _ in range(MAX_TOOL_ROUNDS):
+            tool_outputs = memory_outputs(completed, chat_id) if completed else []
+            if not tool_outputs:
+                break
 
-        if tool_outputs:
             response = st.session_state.client.responses.create(
                 model=model,
                 input=tool_outputs,
@@ -327,7 +332,7 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
                 stream=True,
                 timeout=900.0,
             )
-            full_text, _ = consume_stream(response)
+            full_text, completed = consume_stream(response)
 
         return full_text
     except Exception as e:
@@ -354,21 +359,52 @@ def consume_stream(stream):
 
 def memory_outputs(completed, chat_id):
     outputs = []
+    committed = False
+
     for item in getattr(completed, "output", []) or []:
-        if getattr(item, "type", None) != "function_call" or item.name != "edit_memory":
+        if getattr(item, "type", None) != "function_call":
             continue
+            
+        if item.name != "edit_memory":
+            outputs.append({
+                "type": "function_call_output",
+                "call_id": item.call_id,
+                "output": json.dumps(
+                    {"ok": False, "error": f"unknown tool: {item.name}"},
+                    ensure_ascii=False,
+                ),
+            })
+            continue
+            
+        if committed:
+            outputs.append({
+                "type": "function_call_output",
+                "call_id": item.call_id,
+                "output": json.dumps(
+                    {
+                        "ok": False,
+                        "error": "one edit_memory per round; skipped",
+                    },
+                    ensure_ascii=False,
+                ),
+            })
+            continue
+        
         args = json.loads(item.arguments or "{}")
-        result = commit_edit(
-            supabase,
-            old_str=args.get("old_str", ""),
-            new_str=args.get("new_str", ""),
-            chat_id=chat_id,
-        )
+        try:
+            ops = normalize_operations(args)
+        except ValueError as exc:
+            result = {"ok": False, "error": str(exc)}
+        else:
+            result = commit_edit(supabase, operations=ops, chat_id=chat_id)
+
         outputs.append({
             "type": "function_call_output",
             "call_id": item.call_id,
             "output": json.dumps(result, ensure_ascii=False),
         })
+        committed = True
+
     return outputs
 
 
