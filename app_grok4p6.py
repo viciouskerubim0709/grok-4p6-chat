@@ -391,13 +391,13 @@ def memory_outputs(completed, chat_id):
             continue
         
         args = json.loads(item.arguments or "{}")
-        try:
-            ops = normalize_operations(args)
-        except ValueError as exc:
-            result = {"ok": False, "error": str(exc)}
-        else:
-            result = commit_edit(supabase, operations=ops, chat_id=chat_id)
-
+        result = commit_edit(
+            supabase,
+            old_str=args.get("old_str", ""),
+            new_str=args.get("new_str", ""),
+            operations=args.get("operations"),
+            chat_id=chat_id,
+        )
         outputs.append({
             "type": "function_call_output",
             "call_id": item.call_id,
