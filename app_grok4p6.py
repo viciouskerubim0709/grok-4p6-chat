@@ -356,6 +356,13 @@ def consume_stream(stream):
     placeholder.markdown(full_text)
     return full_text, completed
 
+def _operations_from_args(args: dict) -> list[dict]:
+    ops = args.get("operations")
+    if isinstance(ops, list) and ops:
+        return ops
+    if "old_str" in args or "new_str" in args:
+        return [{"old_str": args.get("old_str", ""), "new_str": args.get("new_str", "")}]
+    return []
 
 def memory_outputs(completed, chat_id):
     outputs = []
@@ -364,7 +371,7 @@ def memory_outputs(completed, chat_id):
     for item in getattr(completed, "output", []) or []:
         if getattr(item, "type", None) != "function_call":
             continue
-            
+
         if item.name != "edit_memory":
             outputs.append({
                 "type": "function_call_output",
@@ -375,29 +382,21 @@ def memory_outputs(completed, chat_id):
                 ),
             })
             continue
-            
+
         if committed:
             outputs.append({
                 "type": "function_call_output",
                 "call_id": item.call_id,
                 "output": json.dumps(
-                    {
-                        "ok": False,
-                        "error": "one edit_memory per round; skipped",
-                    },
+                    {"ok": False, "error": "one edit_memory per round; skipped"},
                     ensure_ascii=False,
                 ),
             })
             continue
-        
+
         args = json.loads(item.arguments or "{}")
-        result = commit_edit(
-            supabase,
-            old_str=args.get("old_str", ""),
-            new_str=args.get("new_str", ""),
-            operations=args.get("operations"),
-            chat_id=chat_id,
-        )
+        operations = _operations_from_args(args)
+        result = commit_edit(supabase, operations=operations, chat_id=chat_id)
         outputs.append({
             "type": "function_call_output",
             "call_id": item.call_id,
