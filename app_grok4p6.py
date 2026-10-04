@@ -360,7 +360,7 @@ def consume_stream(stream):
             break
 
     placeholder.markdown(full_text)
-
+    
     if completed is None:
         debug = f"stream ended without terminal event (last={end_type})"
     else:
@@ -368,9 +368,9 @@ def consume_stream(stream):
         reason = getattr(details, "reason", None) if details else None
         status = getattr(completed, "status", None)
         debug = f"status={status} reason={reason} event={end_type}"
-
+    
     print(debug)
-    st.session_state["last_stream_debug"] = debug
+    full_text += f"\n\n`{debug}`"
     return full_text, completed
 
 def _operations_from_args(args: dict) -> list[dict]:
