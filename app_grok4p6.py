@@ -316,6 +316,7 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
             tools=tools,
             stream=True,
             timeout=900.0,
+            max_output_tokens=8000,
         )
         full_text, completed = consume_stream(response)
         
