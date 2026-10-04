@@ -357,23 +357,20 @@ def consume_stream(stream):
             break
         elif event.type == "error":
             end_type = "error"
-            st.warning(getattr(event, "message", None) or str(event))
             break
 
     placeholder.markdown(full_text)
 
     if completed is None:
-        st.warning(f"stream ended without terminal event (last={end_type})")
+        debug = f"stream ended without terminal event (last={end_type})"
     else:
         details = getattr(completed, "incomplete_details", None)
         reason = getattr(details, "reason", None) if details else None
-        usage = getattr(completed, "usage", None)
-        out_tokens = getattr(usage, "output_tokens", None) if usage else None
-        st.caption(
-            f"status={completed.status} reason={reason} "
-            f"output_tokens={out_tokens} event={end_type}"
-        )
+        status = getattr(completed, "status", None)
+        debug = f"status={status} reason={reason} event={end_type}"
 
+    print(debug)
+    st.session_state["last_stream_debug"] = debug
     return full_text, completed
 
 def _operations_from_args(args: dict) -> list[dict]:
