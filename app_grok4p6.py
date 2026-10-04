@@ -343,17 +343,36 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
 def consume_stream(stream):
     full_text = ""
     completed = None
+    end_type = None
     placeholder = st.empty()
 
     for event in stream:
         if event.type == "response.output_text.delta" and getattr(event, "delta", None):
             full_text += event.delta
             placeholder.markdown(full_text + "▌")
-        elif event.type == "response.completed":
+        elif event.type in ("response.completed", "response.incomplete", "response.failed"):
             completed = getattr(event, "response", None)
+            end_type = event.type
+            break
+        elif event.type == "error":
+            end_type = "error"
+            st.warning(getattr(event, "message", None) or str(event))
             break
 
     placeholder.markdown(full_text)
+
+    if completed is None:
+        st.warning(f"stream ended without terminal event (last={end_type})")
+    else:
+        details = getattr(completed, "incomplete_details", None)
+        reason = getattr(details, "reason", None) if details else None
+        usage = getattr(completed, "usage", None)
+        out_tokens = getattr(usage, "output_tokens", None) if usage else None
+        st.caption(
+            f"status={completed.status} reason={reason} "
+            f"output_tokens={out_tokens} event={end_type}"
+        )
+
     return full_text, completed
 
 def _operations_from_args(args: dict) -> list[dict]:
