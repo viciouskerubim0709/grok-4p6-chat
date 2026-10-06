@@ -134,26 +134,7 @@ def apply_operations(content: str, operations: list[dict]) -> str:
         try:
             content = apply_edit(content, old_str, new_str)
         except ValueError as exc:
-            first = operations[0] if operations else {}
-            failed_old = first.get("old_str", "")
-            failed_new = first.get("new_str", "")
-            _log(
-                sb,
-                version_before=current["version"],
-                version_after=None,
-                operation=_op_type(failed_old, failed_new),
-                old_str=failed_old,
-                new_str=failed_new,
-                success=False,
-                error=str(exc),
-                chat_id=chat_id,
-            )
-            return {
-                "ok": False,
-                "error": str(exc),
-                "content": current["content"],
-                "version": current["version"],
-            }
+            raise ValueError(f"op[{i}]: {exc}") from exc
     return content
 
 def _log(sb, *, version_before, version_after, operation, old_str, new_str, success, error, chat_id):
