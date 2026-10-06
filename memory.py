@@ -172,7 +172,7 @@ def commit_edit(sb, operations: list[dict], chat_id: str | None = None, retries:
                 sb,
                 version_before=current["version"],
                 version_after=None,
-                operation="batch",
+                operation=_op_type(old_str, new_str),
                 old_str=first.get("old_str", ""),
                 new_str=first.get("new_str", ""),
                 success=False,
