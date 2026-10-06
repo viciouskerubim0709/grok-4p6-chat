@@ -167,14 +167,16 @@ def commit_edit(sb, operations: list[dict], chat_id: str | None = None, retries:
         try:
             new_content = apply_operations(current["content"], operations)
         except ValueError as exc:
-            first = operations[0] if operations else {"old_str": "", "new_str": ""}
+            first = operations[0] if operations else {}
+            failed_old = first.get("old_str", "")
+            failed_new = first.get("new_str", "")
             _log(
                 sb,
                 version_before=current["version"],
                 version_after=None,
-                operation=_op_type(old_str, new_str),
-                old_str=first.get("old_str", ""),
-                new_str=first.get("new_str", ""),
+                operation=_op_type(failed_old, failed_new),
+                old_str=failed_old,
+                new_str=failed_new,
                 success=False,
                 error=str(exc),
                 chat_id=chat_id,
