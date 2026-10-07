@@ -396,13 +396,15 @@ def memory_outputs(completed, chat_id):
 
         args = json.loads(item.arguments or "{}")
         operations = _operations_from_args(args)
-        result = commit_edit(supabase, operations=operations, chat_id=chat_id)
+        try:
+            result = commit_edit(supabase, operations=operations, chat_id=chat_id)
+        except Exception as exc:
+            result = {"ok": False, "error": str(exc)}
         outputs.append({
             "type": "function_call_output",
             "call_id": item.call_id,
             "output": json.dumps(result, ensure_ascii=False),
         })
-        committed = True
 
     return outputs
 
