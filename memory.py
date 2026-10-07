@@ -170,17 +170,20 @@ def commit_edit(sb, operations: list[dict], chat_id: str | None = None, retries:
             first = operations[0] if operations else {}
             failed_old = first.get("old_str", "")
             failed_new = first.get("new_str", "")
-            _log(
-                sb,
-                version_before=current["version"],
-                version_after=None,
-                operation=_op_type(failed_old, failed_new),
-                old_str=failed_old,
-                new_str=failed_new,
-                success=False,
-                error=str(exc),
-                chat_id=chat_id,
-            )
+            try:
+                _log(
+                    sb,
+                    version_before=current["version"],
+                    version_after=None,
+                    operation=_op_type(failed_old, failed_new),
+                    old_str=failed_old,
+                    new_str=failed_new,
+                    success=False,
+                    error=str(exc),
+                    chat_id=chat_id,
+                )
+            except Exception:
+                pass
             return {
                 "ok": False,
                 "error": str(exc),
