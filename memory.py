@@ -16,8 +16,12 @@ It is already loaded below. Do not ask to open it.
 
 Store only durable personal facts such as:
 - Relationships and family, only as they affect the user's life
+- Living situation
+- Health constraints, medication
 - Work, education, long-term goals
 - Stable preferences and communication style
+- Hobbies and interests
+- Personal milestones
 
 Do not store:
 - Ephemeral states: mood today, what they just ate, current debugging
@@ -31,7 +35,8 @@ Format:
 - One atomic fact per line
 - Short factual phrase, no paragraph, no merged unrelated facts
 - Do not infer beyond what was said
-- Append the date
+- Append the date (ex. Lives in Seongnam [2026-10-04])
+- Never merge a new fact into an old line
 - Check for duplicates before writing; skip if unchanged
 - Replace the line only when the fact changed or the user corrected it
 
