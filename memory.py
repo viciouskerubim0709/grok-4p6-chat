@@ -3,7 +3,7 @@
 The row in memory_docs is the file. Do not copy it into chats.messages.
 Inject content on every request. Mutate only through edit_memory.
 """
-import re
+
 from __future__ import annotations
 
 DOC_ID = "default"
@@ -37,7 +37,7 @@ Format:
 - Do not infer beyond what was said
 - Append the date (ex. Lives in Seongnam [2026-10-04])
 - Never merge a new fact into an old line
-- Check for duplicates before writing; skip if unchanged
+- Must check for duplicates before writing; skip if unchanged
 - Replace the line only when the fact changed or the user corrected it
 
 Add when the fact is new, durable, and passes the rules above.
@@ -75,7 +75,6 @@ def edit_memory_tool() -> dict:
                 "old_str must match exactly once in the current text after previous ops. "
                 "Empty old_str appends new_str."
                 "Empty new_str deletes the matched text."
-                "Check for duplicates before writing; skip if unchanged."
             ),
             "parameters": {
                 "type": "object",
@@ -110,31 +109,10 @@ def edit_memory_tool_responses() -> dict:
     nested = edit_memory_tool()["function"]
     return {"type": "function", **nested}
 
-########## 중복 방지용 설계 ##########
-_DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
-
-def _norm_line(s: str) -> str:
-    s = s.strip()
-    s = _DATE_SUFFIX.sub("", s)
-    s = re.sub(r"\s+", " ", s)
-    return s
-
-def _line_norms(text: str) -> set[str]:
-    return {_norm_line(line) for line in text.splitlines() if line.strip()}
-
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
-        sep = "" if content.endswith("\n") or content == "" else "\n"
-        return content + sep + new_str
-
-        existing = _line_norms(content)
-        new_lines = [ln for ln in new_str.splitlines() if ln.strip()]
-        dups = [ln for ln in new_lines if _norm_line(ln) in existing]
-        if dups:
-            raise ValueError(f"duplicate fact already in memory: {dups[0]}")
-
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
