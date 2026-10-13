@@ -37,7 +37,7 @@ Format:
 - Do not infer beyond what was said
 - Append the date (ex. Lives in Seongnam [2026-10-04])
 - Never merge a new fact into an old line
-- Check for duplicates before writing; skip if unchanged
+- Must check for duplicates before writing; skip if unchanged
 - Replace the line only when the fact changed or the user corrected it
 
 Add when the fact is new, durable, and passes the rules above.
