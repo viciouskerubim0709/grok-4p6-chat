@@ -112,7 +112,15 @@ def edit_memory_tool_responses() -> dict:
 
 ########## 중복방지 설계 ##########
 
-_DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
+def _norm_line(s: str) -> str:
+    s = s.strip()
+    s = _DATE_SUFFIX.sub("", s)
+    s = re.sub(r"\s+", " ", s)
+    return s
+    
+
+def _line_norms(text: str) -> set[str]:
+    return {_norm_line(line) for line in text.splitlines() if line.strip()}
 
 
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
