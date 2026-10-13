@@ -112,6 +112,8 @@ def edit_memory_tool_responses() -> dict:
 
 ########## 중복방지 설계 ##########
 
+_DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
+
 def _norm_line(s: str) -> str:
     s = s.strip()
     s = _DATE_SUFFIX.sub("", s)
@@ -144,6 +146,7 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
         raise ValueError(f"old_str matched {count} times")
     return content.replace(old_str, new_str, 1)
 
+
 def apply_operations(content: str, operations: list[dict]) -> str:
     if not isinstance(operations, list) or len(operations) == 0:
         raise ValueError("operations is empty")
@@ -162,6 +165,7 @@ def apply_operations(content: str, operations: list[dict]) -> str:
         except ValueError as exc:
             raise ValueError(f"op[{i}]: {exc}") from exc
     return content
+
 
 def _log(sb, *, version_before, version_after, operation, old_str, new_str, success, error, chat_id):
     sb.table("memory_edits").insert(
