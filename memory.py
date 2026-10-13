@@ -115,21 +115,17 @@ def edit_memory_tool_responses() -> dict:
 _DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
 
 
-def _norm_line(s: str) -> str:
-    s = s.strip()
-    s = _DATE_SUFFIX.sub("", s)
-    s = re.sub(r"\s+", " ", s)
-    return s
-
-
-def _line_norms(text: str) -> set[str]:
-    return {_norm_line(line) for line in text.splitlines() if line.strip()}
-
-
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
+
+        existing = _line_norms(content)
+        new_lines = [ln for ln in new_str.splitlines() if ln.strip()]
+        dups = [ln for ln in new_lines if _norm_line(ln) in existing]
+        if dups:
+            raise ValueError(f"duplicate fact already in memory: {dups[0]}")
+
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
