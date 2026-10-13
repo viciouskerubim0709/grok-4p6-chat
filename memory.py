@@ -113,6 +113,15 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
+        import re
+        def _n(s):
+            s = s.strip()
+            s = re.sub(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$", "", s)
+            return re.sub(r"\s+", " ", s)
+        existing = {_n(line) for line in content.splitlines() if line.strip()}
+        for ln in new_str.splitlines():
+            if ln.strip() and _n(ln) in existing:
+                raise ValueError("duplicate fact already in memory: " + ln.strip())
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
@@ -120,7 +129,7 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if count == 0:
         raise ValueError("old_str not found")
     if count > 1:
-        raise ValueError(f"old_str matched {count} times")
+        raise ValueError("old_str matched {0} times".format(count))
     return content.replace(old_str, new_str, 1)
 
 def apply_operations(content: str, operations: list[dict]) -> str:
