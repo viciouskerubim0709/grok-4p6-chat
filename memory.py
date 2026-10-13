@@ -109,19 +109,34 @@ def edit_memory_tool_responses() -> dict:
     nested = edit_memory_tool()["function"]
     return {"type": "function", **nested}
 
+
+import re
+
+_DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
+
+
+def _norm_line(s: str) -> str:
+    s = s.strip()
+    s = _DATE_SUFFIX.sub("", s)
+    s = re.sub(r"\s+", " ", s)
+    return s
+
+
+def _line_norms(text: str) -> set[str]:
+    return {_norm_line(line) for line in text.splitlines() if line.strip()}
+
+
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
-        import re
-        def _n(s):
-            s = s.strip()
-            s = re.sub(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$", "", s)
-            return re.sub(r"\s+", " ", s)
-        existing = {_n(line) for line in content.splitlines() if line.strip()}
-        for ln in new_str.splitlines():
-            if ln.strip() and _n(ln) in existing:
-                raise ValueError("duplicate fact already in memory: " + ln.strip())
+
+        existing = _line_norms(content)
+        new_lines = [ln for ln in new_str.splitlines() if ln.strip()]
+        dups = [ln for ln in new_lines if _norm_line(ln) in existing]
+        if dups:
+            raise ValueError("duplicate fact already in memory: " + dups[0])
+
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
@@ -131,6 +146,8 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if count > 1:
         raise ValueError("old_str matched {0} times".format(count))
     return content.replace(old_str, new_str, 1)
+
+
 
 def apply_operations(content: str, operations: list[dict]) -> str:
     if not isinstance(operations, list) or len(operations) == 0:
