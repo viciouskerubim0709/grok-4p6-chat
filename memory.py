@@ -112,7 +112,7 @@ def edit_memory_tool_responses() -> dict:
     return {"type": "function", **nested}
 
 
-##############
+############## 중복 메모리 추가 방지 ##############
 
 _DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
 
