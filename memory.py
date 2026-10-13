@@ -136,7 +136,7 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if count == 0:
         raise ValueError("old_str not found")
     if count > 1:
-        raise ValueError("old_str matched {0} times".format(count))
+        raise ValueError(f"old_str matched {count} times")
     return content.replace(old_str, new_str, 1)
 
 
