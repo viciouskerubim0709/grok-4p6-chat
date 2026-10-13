@@ -125,18 +125,10 @@ def _norm_line(s: str) -> str:
 def _line_norms(text: str) -> set[str]:
     return {_norm_line(line) for line in text.splitlines() if line.strip()}
 
-
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
-
-        existing = _line_norms(content)
-        new_lines = [ln for ln in new_str.splitlines() if ln.strip()]
-        dups = [ln for ln in new_lines if _norm_line(ln) in existing]
-        if dups:
-            raise ValueError("duplicate fact already in memory: " + dups[0])
-
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
