@@ -4,6 +4,7 @@ The row in memory_docs is the file. Do not copy it into chats.messages.
 Inject content on every request. Mutate only through edit_memory.
 """
 
+import re
 from __future__ import annotations
 
 DOC_ID = "default"
@@ -109,10 +110,33 @@ def edit_memory_tool_responses() -> dict:
     nested = edit_memory_tool()["function"]
     return {"type": "function", **nested}
 
+
+############# 중복 기억 추가 방지 ############# 
+_DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
+
+
+def _norm_line(s: str) -> str:
+    s = s.strip()
+    s = _DATE_SUFFIX.sub("", s)
+    s = re.sub(r"\s+", " ", s)
+    return s
+
+
+def _line_norms(text: str) -> set[str]:
+    return {_norm_line(line) for line in text.splitlines() if line.strip()}
+
+
 def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if old_str == "":
         if new_str == "":
             raise ValueError("both old_str and new_str are empty")
+
+        existing = _line_norms(content)
+        new_lines = [ln for ln in new_str.splitlines() if ln.strip()]
+        dups = [ln for ln in new_lines if _norm_line(ln) in existing]
+        if dups:
+            raise ValueError("duplicate fact already in memory: " + dups[0])
+
         sep = "" if content.endswith("\n") or content == "" else "\n"
         return content + sep + new_str
 
@@ -120,8 +144,9 @@ def apply_edit(content: str, old_str: str, new_str: str) -> str:
     if count == 0:
         raise ValueError("old_str not found")
     if count > 1:
-        raise ValueError(f"old_str matched {count} times")
+        raise ValueError("old_str matched {0} times".format(count))
     return content.replace(old_str, new_str, 1)
+
 
 def apply_operations(content: str, operations: list[dict]) -> str:
     if not isinstance(operations, list) or len(operations) == 0:
