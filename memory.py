@@ -5,6 +5,8 @@ Inject content on every request. Mutate only through edit_memory.
 """
 
 from __future__ import annotations
+import re
+
 
 DOC_ID = "default"
 
@@ -110,7 +112,6 @@ def edit_memory_tool_responses() -> dict:
     return {"type": "function", **nested}
 
 
-import re
 
 _DATE_SUFFIX = re.compile(r"\s*\[\d{4}-\d{2}-\d{2}\]\s*$")
 
