@@ -70,7 +70,7 @@ st.markdown("""
         padding-right: 1rem !important;
     }
     .st-key-convo_save_option {
-        border: 1.5px solid !important;
+        border: 0px solid !important;
         border-radius: 10px !important;
         padding: 0.5rem !important;
     }
