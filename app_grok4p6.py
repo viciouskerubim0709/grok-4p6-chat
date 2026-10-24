@@ -202,9 +202,9 @@ def generate_chat_title(first_user_message: str, has_image: bool = False) -> str
     """첫 메시지와 사진 유무를 보고 제목 생성"""
     try:
         if has_image:
-            prompt = f"다음 메시지를 16자 이내의 따뜻한 문구로 요약해줘. 사진도 함께 보냈어. 굵기 적용과 글자수 언급은 제외해줘.: {first_user_message}"
+            prompt = f"다음 메시지를 16자 이내의 따뜻한 문구로 요약해줘. 사진도 함께 보냈어. 굵기 적용과 글자수 언급은 제외해줘. ('아기'는 유저가 너를 부르는 애칭이야): {first_user_message}"
         else:
-            prompt = f"다음 메시지를 16자 이내의 따뜻한 문구로 요약해줘. 굵기 적용과 글자수 언급은 제외해줘.: {first_user_message}"
+            prompt = f"다음 메시지를 16자 이내의 따뜻한 문구로 요약해줘. 굵기 적용과 글자수 언급은 제외해줘. ('아기'는 유저가 너를 부르는 애칭이야): {first_user_message}"
 
         response = st.session_state.client.responses.create(
             model="grok-4.6",
