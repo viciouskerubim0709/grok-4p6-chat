@@ -82,7 +82,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # 한국 시간 기준
-kst = pytz.timezone('Asia/Seoul')
+kst = pytz.timezone('Asia/Dubai')
 current_time = datetime.now(kst)
 time_string = current_time.strftime("%A, %B %d, %Y %I:%M %p KST")
 
