@@ -314,6 +314,7 @@ def call_grok_with_vision(messages, model="grok-4.6", use_tools=False, chat_id=N
             model=model,
             input=messages,
             tools=tools,
+            reasoning={"effort": "high"},
             stream=True,
             timeout=900.0,
         )
